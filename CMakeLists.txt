@@ -23,19 +23,11 @@ include_directories(${ASIO_DIR})
 add_subdirectory(${ASIO_DIR})
 list(APPEND PRJ_EXE_LIST ${asio_files})
 
-#[[opengl]]
-set(OPENGL_DIR ${PRJ_INC_DIR}/opengl)
-include_directories(${OPENGL_DIR})
-file(GLOB opengl_header ${OPENGL_DIR}/*.h)
-file(GLOB opengl_src ${OPENGL_DIR}/*.c)
-list(APPEND PRJ_EXE_LIST ${opengl_header} ${opengl_src})
-
-#[[imgui]]
-set(IMGUI_DIR ${PRJ_INC_DIR}/imgui)
-file(GLOB imgui_header ${IMGUI_DIR}/*.h)
-file(GLOB imgui_cpp ${IMGUI_DIR}/*.cpp)
-include_directories(${IMGUI_DIR})
-list(APPEND PRJ_EXE_LIST ${imgui_header} ${imgui_cpp})
+#[[asio2]]
+set(ASIO2_DIR ${PRJ_INC_DIR}/asio2)
+include_directories(${ASIO2_DIR})
+add_subdirectory(${ASIO2_DIR})
+list(APPEND PRJ_EXE_LIST ${asio2_files})
 
 
 #[[src]]

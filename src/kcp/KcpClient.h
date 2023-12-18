@@ -14,13 +14,9 @@
 
 class KCPClient {
 public:
-    KCPClient(asio::io_context& io_context, const std::string& server_ip, unsigned short server_port)
-            : io_context(io_context), socket(io_context, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
-              server_endpoint(asio::ip::address::from_string(server_ip), server_port) {
+    bool should_exit = false;
 
-        kcp = ikcp_create(0x11223344, (void*)this);
-        ikcp_setoutput(kcp, &KCPClient::udp_output);
-    }
+    KCPClient(asio::io_context& io_context, const std::string& server_ip, unsigned short server_port);
 
     ~KCPClient() {
         ikcp_release(kcp);
@@ -36,15 +32,23 @@ public:
         std::cout << "send data: " << data << std::endl;
     }
 
+    void start_receive();
+    void on_receive(const char *data, size_t length);
+
 private:
     asio::io_context& io_context;
     asio::ip::udp::socket socket;
     asio::ip::udp::endpoint server_endpoint;
+    std::array<char, 1024> receive_buffer{};
     ikcpcb *kcp;
 
     static int udp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
-        KCPClient *client = (KCPClient*)user;
-        client->socket.send_to(asio::buffer(buf, len), client->server_endpoint);
+        auto *client = (KCPClient*)user;
+        client->socket.async_send(asio::buffer(buf, len), [](std::error_code ec, std::size_t bytes_sent) {
+            if (ec) {
+                std::cout << "send error: " << ec.message() << std::endl;
+            }
+        });
         return 0;
     }
 
