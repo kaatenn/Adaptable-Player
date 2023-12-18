@@ -23,13 +23,6 @@ include_directories(${ASIO_DIR})
 add_subdirectory(${ASIO_DIR})
 list(APPEND PRJ_EXE_LIST ${asio_files})
 
-#[[asio2]]
-set(ASIO2_DIR ${PRJ_INC_DIR}/asio2)
-include_directories(${ASIO2_DIR})
-add_subdirectory(${ASIO2_DIR})
-list(APPEND PRJ_EXE_LIST ${asio2_files})
-
-
 #[[src]]
 add_subdirectory(${PRJ_SRC_DIR})
 include_directories(${PRJ_SRC_DIR})

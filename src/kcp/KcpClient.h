@@ -6,11 +6,12 @@
 #define ADAPTABLE_UPLOADER_KCPCLIENT_H
 
 #include "ikcp.h"
-#include "asio/asio.hpp"
 
 #include <string>
 #include <chrono>
 #include "iostream"
+
+#include <asio.hpp>
 
 class KCPClient {
 public:

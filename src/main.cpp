@@ -3,10 +3,7 @@
 #include <iostream>
 #include <exception>
 
-#include "asio/asio.hpp"
-
 #include "kcp/KcpClient.h"
-
 
 using std::string;
 int main() {
