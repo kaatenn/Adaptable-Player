@@ -4,6 +4,7 @@
 #include <exception>
 
 #include "kcp/KcpClient.h"
+#include "ui/PlayerUi.h"
 
 using std::string;
 int main() {
