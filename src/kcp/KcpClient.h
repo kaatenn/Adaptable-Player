@@ -10,8 +10,11 @@
 #include <string>
 #include <chrono>
 #include "iostream"
+#include "fstream"
 
 #include <asio.hpp>
+
+using std::ofstream, std::ios;
 
 class KCPClient {
 public:
@@ -23,14 +26,10 @@ public:
         ikcp_release(kcp);
     }
 
-    void update() {
-        ikcp_update(kcp, iclock());
-        // 其他处理，例如接收数据等
-    }
+    void update();
 
     void send(const char *data, size_t length) {
         ikcp_send(kcp, data, length);
-        std::cout << "send data: " << data << std::endl;
     }
 
     void start_receive();
@@ -40,25 +39,19 @@ private:
     asio::io_context& io_context;
     asio::ip::udp::socket socket;
     asio::ip::udp::endpoint server_endpoint;
+    asio::steady_timer *timer;
     std::array<char, 1024> receive_buffer{};
+    std::array<char, 1024> file_buffer{};
+    ofstream fout;
     ikcpcb *kcp;
 
-    static int udp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
-        auto *client = (KCPClient*)user;
-        client->socket.async_send(asio::buffer(buf, len), [](std::error_code ec, std::size_t bytes_sent) {
-            if (ec) {
-                std::cout << "send error: " << ec.message() << std::endl;
-            }
-        });
-        return 0;
-    }
+    static int udp_output(const char *buf, int len, ikcpcb *kcp, void *user);
 
     static inline uint32_t iclock()
     {
         using namespace std::chrono;
         return static_cast<uint32_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count());
     }
-
 };
 
 

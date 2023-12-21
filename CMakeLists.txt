@@ -23,6 +23,12 @@ include_directories(${ASIO_DIR})
 add_subdirectory(${ASIO_DIR})
 list(APPEND PRJ_EXE_LIST ${asio_files})
 
+#[[imgui]]
+set(IMGUI_DIR ${PRJ_INC_DIR}/imgui)
+include_directories(${IMGUI_DIR})
+add_subdirectory(${IMGUI_DIR})
+list(APPEND PRJ_EXE_LIST ${imgui_files})
+
 #[[src]]
 add_subdirectory(${PRJ_SRC_DIR})
 include_directories(${PRJ_SRC_DIR})

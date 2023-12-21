@@ -14,20 +14,12 @@ int main() {
         std::string server_ip = "127.0.0.1";
         KCPClient client(io_context, server_ip, port);
 
-        client.start_receive();
-        client.send("hello", 5);
-        io_context.run();
-        std::thread client_thread([&]() {
-            while (true) {
-                client.update();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                if (client.should_exit) {
-                    break;
-                }
-            }
-        });
 
-        client_thread.join();
+        client.start_receive();
+        const char* msg = "hello";
+        client.send(msg, strlen(msg) + 1);
+        io_context.run();
+
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
     }
