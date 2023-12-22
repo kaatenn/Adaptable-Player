@@ -4,11 +4,16 @@
 #include <exception>
 
 #include "kcp/KcpClient.h"
-#include "ui/PlayerUi.h"
+#include "ui/ui.hpp"
 
 using std::string;
 int main() {
     try {
+        // ui init
+        std::thread ui_thread([]() {
+            render();
+        });
+        // asio init
         asio::io_context io_context;
 
         unsigned short port = 12345;
@@ -19,8 +24,12 @@ int main() {
         client.start_receive();
         const char* msg = "hello";
         client.send(msg, strlen(msg) + 1);
-        io_context.run();
+        std::thread asio_thread([&io_context]() { io_context.run(); });
+        /*io_context.run();*/
 
+        // thread join
+        asio_thread.join();
+        ui_thread.join();
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
     }
