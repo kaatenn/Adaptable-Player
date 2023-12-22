@@ -437,6 +437,8 @@ LRESULT WINAPI wnd_proc(HWND h_wnd, UINT msg, WPARAM w_param, LPARAM l_param) {
         case WM_DESTROY:
             ::PostQuitMessage(0);
             return 0;
+        default:
+            break;
     }
     return ::DefWindowProcW(h_wnd, msg, w_param, l_param);
 }
