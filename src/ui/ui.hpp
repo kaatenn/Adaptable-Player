@@ -11,6 +11,7 @@
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <tchar.h>
+#include "Data/DataWrapper.hpp"
 
 #ifdef _DEBUG
 #define DX12_ENABLE_DEBUG_LAYER
@@ -63,7 +64,7 @@ FrameContext *wait_for_next_frame_resources();
 LRESULT WINAPI wnd_proc(HWND h_wnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
 // Main code
-int render() {
+int render(DataWrapper* data_wrapper) {
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = {sizeof(wc), CS_CLASSDC, wnd_proc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr,
@@ -102,6 +103,9 @@ int render() {
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    // data init
+    DataWrapper *data = data_wrapper;
+
     // Main loop
     bool done = false;
     while (true) {
@@ -126,6 +130,8 @@ int render() {
         // Show the main ui -- selector
         {
             // TODO: add a selector
+            ImGui::Begin("Selector");
+            ImGui::End();
         }
 
         // Show the main ui -- player
@@ -183,6 +189,9 @@ int render() {
     cleanup_device_D3D();
     ::DestroyWindow(hwnd);
     ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+
+    // data setting
+    data->should_close.set(true);
 
     return 0;
 }

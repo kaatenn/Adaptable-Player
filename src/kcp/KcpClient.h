@@ -6,6 +6,8 @@
 #define ADAPTABLE_UPLOADER_KCPCLIENT_H
 
 #include "ikcp.h"
+#include "Data/DataWrapper.hpp"
+// TODO: Add DataWrapper
 
 #include <string>
 #include <chrono>
@@ -20,7 +22,8 @@ class KCPClient {
 public:
     bool should_exit = false;
 
-    KCPClient(asio::io_context& io_context, const std::string& server_ip, unsigned short server_port);
+    KCPClient(asio::io_context& io_context, const std::string& server_ip, unsigned short server_port, DataWrapper*
+    data_wrapper);
 
     ~KCPClient() {
         ikcp_release(kcp);
@@ -44,6 +47,8 @@ private:
     std::array<char, 1024> file_buffer{};
     ofstream fout;
     ikcpcb *kcp;
+
+    DataWrapper* data_wrapper;
 
     static int udp_output(const char *buf, int len, ikcpcb *kcp, void *user);
 

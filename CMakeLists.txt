@@ -29,6 +29,12 @@ include_directories(${IMGUI_DIR})
 add_subdirectory(${IMGUI_DIR})
 list(APPEND PRJ_EXE_LIST ${imgui_files})
 
+#[[nlohmann]]
+set(NLOHMANN_DIR ${PRJ_INC_DIR}/nlohmann)
+include_directories(${NLOHMANN_DIR})
+file(GLOB nlohmann_header ${NLOHMANN_DIR}/*.hpp)
+list(APPEND PRJ_EXE_LIST ${nlohmann_header})
+
 #[[src]]
 add_subdirectory(${PRJ_SRC_DIR})
 include_directories(${PRJ_SRC_DIR})

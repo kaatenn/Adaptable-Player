@@ -4,9 +4,10 @@
 
 #include "KcpClient.h"
 
-KCPClient::KCPClient(asio::io_context &io_context, const std::string &server_ip, unsigned short server_port)
+KCPClient::KCPClient(asio::io_context &io_context, const std::string &server_ip, unsigned short server_port,
+                     DataWrapper* data_wrapper)
         : io_context(io_context), socket(io_context, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
-          server_endpoint(asio::ip::address::from_string(server_ip), server_port) {
+          server_endpoint(asio::ip::address::from_string(server_ip), server_port), data_wrapper(data_wrapper) {
 
     kcp = ikcp_create(0x11223344, (void*)this);
     socket.connect(server_endpoint);
@@ -63,6 +64,11 @@ int KCPClient::udp_output(const char *buf, int len, ikcpcb *kcp, void *user) {
 }
 
 void KCPClient::update() {
+    bool should_close = data_wrapper->should_close.get_and_reset() != std::nullopt;
+    if (should_close) {
+        io_context.stop();
+        return;
+    }
     ikcp_update(kcp, iclock());
 
     // refresh timer

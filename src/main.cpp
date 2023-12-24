@@ -5,20 +5,24 @@
 
 #include "kcp/KcpClient.h"
 #include "ui/ui.hpp"
+#include "Data/DataWrapper.hpp"
 
 using std::string;
 int main() {
     try {
+        // data init
+        DataWrapper data_wrapper;
+
         // ui init
-        std::thread ui_thread([]() {
-            render();
+        std::thread ui_thread([&data_wrapper]() {
+            render(&data_wrapper);
         });
         // asio init
         asio::io_context io_context;
 
         unsigned short port = 12345;
         std::string server_ip = "127.0.0.1";
-        KCPClient client(io_context, server_ip, port);
+        KCPClient client(io_context, server_ip, port, &data_wrapper);
 
 
         client.start_receive();
