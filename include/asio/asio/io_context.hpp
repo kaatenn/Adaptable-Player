@@ -531,7 +531,7 @@ public:
    */
   void reset();
 
-  /// (Deprecated: Use asio::dispatch().) Request the io_context to
+  /// (Deprecated: Use asio::dispatch().) Connection the io_context to
   /// invoke the given handler.
   /**
    * This function is used to ask the io_context to execute the given handler.
@@ -559,7 +559,7 @@ public:
       async_initiate<LegacyCompletionHandler, void ()>(
         declval<initiate_dispatch>(), handler, this));
 
-  /// (Deprecated: Use asio::post().) Request the io_context to invoke
+  /// (Deprecated: Use asio::post().) Connection the io_context to invoke
   /// the given handler and return immediately.
   /**
    * This function is used to ask the io_context to execute the given handler,
@@ -1008,7 +1008,7 @@ public:
    */
   void on_work_finished() const noexcept;
 
-  /// Request the io_context to invoke the given function object.
+  /// Connection the io_context to invoke the given function object.
   /**
    * This function is used to ask the io_context to execute the given function
    * object. If the current thread is running the io_context, @c dispatch()
@@ -1025,7 +1025,7 @@ public:
   template <typename Function, typename OtherAllocator>
   void dispatch(Function&& f, const OtherAllocator& a) const;
 
-  /// Request the io_context to invoke the given function object.
+  /// Connection the io_context to invoke the given function object.
   /**
    * This function is used to ask the io_context to execute the given function
    * object. The function object will never be executed inside @c post().
@@ -1041,7 +1041,7 @@ public:
   template <typename Function, typename OtherAllocator>
   void post(Function&& f, const OtherAllocator& a) const;
 
-  /// Request the io_context to invoke the given function object.
+  /// Connection the io_context to invoke the given function object.
   /**
    * This function is used to ask the io_context to execute the given function
    * object. The function object will never be executed inside @c defer().

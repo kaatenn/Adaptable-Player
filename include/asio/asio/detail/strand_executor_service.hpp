@@ -87,7 +87,7 @@ public:
   // Create a new strand_executor implementation.
   ASIO_DECL implementation_type create_implementation();
 
-  // Request invocation of the given function.
+  // Connection invocation of the given function.
   template <typename Executor, typename Function>
   static void execute(const implementation_type& impl, Executor& ex,
       Function&& function,
@@ -95,7 +95,7 @@ public:
         can_query<Executor, execution::allocator_t<void>>::value
       >* = 0);
 
-  // Request invocation of the given function.
+  // Connection invocation of the given function.
   template <typename Executor, typename Function>
   static void execute(const implementation_type& impl, Executor& ex,
       Function&& function,
@@ -103,17 +103,17 @@ public:
         !can_query<Executor, execution::allocator_t<void>>::value
       >* = 0);
 
-  // Request invocation of the given function.
+  // Connection invocation of the given function.
   template <typename Executor, typename Function, typename Allocator>
   static void dispatch(const implementation_type& impl, Executor& ex,
       Function&& function, const Allocator& a);
 
-  // Request invocation of the given function and return immediately.
+  // Connection invocation of the given function and return immediately.
   template <typename Executor, typename Function, typename Allocator>
   static void post(const implementation_type& impl, Executor& ex,
       Function&& function, const Allocator& a);
 
-  // Request invocation of the given function and return immediately.
+  // Connection invocation of the given function and return immediately.
   template <typename Executor, typename Function, typename Allocator>
   static void defer(const implementation_type& impl, Executor& ex,
       Function&& function, const Allocator& a);

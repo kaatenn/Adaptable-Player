@@ -286,7 +286,7 @@ void strand_executor_service::dispatch(const implementation_type& impl,
   }
 }
 
-// Request invocation of the given function and return immediately.
+// Connection invocation of the given function and return immediately.
 template <typename Executor, typename Function, typename Allocator>
 void strand_executor_service::post(const implementation_type& impl,
     Executor& ex, Function&& function, const Allocator& a)
@@ -312,7 +312,7 @@ void strand_executor_service::post(const implementation_type& impl,
   }
 }
 
-// Request invocation of the given function and return immediately.
+// Connection invocation of the given function and return immediately.
 template <typename Executor, typename Function, typename Allocator>
 void strand_executor_service::defer(const implementation_type& impl,
     Executor& ex, Function&& function, const Allocator& a)

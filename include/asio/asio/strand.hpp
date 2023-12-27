@@ -249,7 +249,7 @@ public:
   }
 #endif // !defined(ASIO_NO_TS_EXECUTORS)
 
-  /// Request the strand to invoke the given function object.
+  /// Connection the strand to invoke the given function object.
   /**
    * This function is used to ask the strand to execute the given function
    * object on its underlying executor. The function object will be executed
@@ -270,7 +270,7 @@ public:
   }
 
 #if !defined(ASIO_NO_TS_EXECUTORS)
-  /// Request the strand to invoke the given function object.
+  /// Connection the strand to invoke the given function object.
   /**
    * This function is used to ask the strand to execute the given function
    * object on its underlying executor. The function object will be executed
@@ -292,7 +292,7 @@ public:
         executor_, static_cast<Function&&>(f), a);
   }
 
-  /// Request the strand to invoke the given function object.
+  /// Connection the strand to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object will never be executed inside this function.
@@ -312,7 +312,7 @@ public:
         executor_, static_cast<Function&&>(f), a);
   }
 
-  /// Request the strand to invoke the given function object.
+  /// Connection the strand to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object will never be executed inside this function.

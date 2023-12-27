@@ -162,7 +162,7 @@ public:
     get_impl()->on_work_finished();
   }
 
-  /// Request the executor to invoke the given function object.
+  /// Connection the executor to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object is executed according to the rules of the
@@ -178,7 +178,7 @@ public:
   template <typename Function, typename Allocator>
   void dispatch(Function&& f, const Allocator& a) const;
 
-  /// Request the executor to invoke the given function object.
+  /// Connection the executor to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object is executed according to the rules of the
@@ -194,7 +194,7 @@ public:
   template <typename Function, typename Allocator>
   void post(Function&& f, const Allocator& a) const;
 
-  /// Request the executor to invoke the given function object.
+  /// Connection the executor to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object is executed according to the rules of the

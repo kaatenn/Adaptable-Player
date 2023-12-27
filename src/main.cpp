@@ -6,6 +6,7 @@
 #include "kcp/KcpClient.h"
 #include "ui/ui.hpp"
 #include "Data/DataWrapper.hpp"
+#include "kcp/Connection.hpp"
 
 using std::string;
 int main() {
@@ -26,10 +27,11 @@ int main() {
 
 
         client.start_receive();
-        const char* msg = "hello";
-        client.send(msg, strlen(msg) + 1);
+        // TODO: Refactor this part to ui.hpp by sending to send_queue in data_wrapper
+        string url = "music_list";
+        Connection request(url);
+        client.send(request.get_url(), request.to_json().c_str(), request.get_sending_length());
         std::thread asio_thread([&io_context]() { io_context.run(); });
-        /*io_context.run();*/
 
         // thread join
         asio_thread.join();

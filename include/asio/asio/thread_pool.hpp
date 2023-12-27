@@ -563,7 +563,7 @@ public:
    */
   void on_work_finished() const noexcept;
 
-  /// Request the thread pool to invoke the given function object.
+  /// Connection the thread pool to invoke the given function object.
   /**
    * This function is used to ask the thread pool to execute the given function
    * object. If the current thread belongs to the pool, @c dispatch() executes
@@ -580,7 +580,7 @@ public:
   template <typename Function, typename OtherAllocator>
   void dispatch(Function&& f, const OtherAllocator& a) const;
 
-  /// Request the thread pool to invoke the given function object.
+  /// Connection the thread pool to invoke the given function object.
   /**
    * This function is used to ask the thread pool to execute the given function
    * object. The function object will never be executed inside @c post().
@@ -596,7 +596,7 @@ public:
   template <typename Function, typename OtherAllocator>
   void post(Function&& f, const OtherAllocator& a) const;
 
-  /// Request the thread pool to invoke the given function object.
+  /// Connection the thread pool to invoke the given function object.
   /**
    * This function is used to ask the thread pool to execute the given function
    * object. The function object will never be executed inside @c defer().

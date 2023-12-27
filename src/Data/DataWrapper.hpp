@@ -6,9 +6,12 @@
 #define ADAPTABLE_UPLOADER_DATAWRAPPER_HPP
 
 #include "ThreadSafe/ProducerConsumerOptional.h"
+#include "ThreadSafe/ProducerConsumerQueue.h"
 
 struct DataWrapper {
     ProducerConsumerOptional<bool> should_close;
+    ProducerConsumerQueue<string> recv_queue;
+    ProducerConsumerQueue<string> send_queue;
 };
 
 

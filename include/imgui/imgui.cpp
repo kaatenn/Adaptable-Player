@@ -8167,7 +8167,7 @@ static int CalcRoutingScore(ImGuiWindow* location, ImGuiID owner_id, ImGuiInputF
     return 0;
 }
 
-// Request a desired route for an input chord (key + mods).
+// Connection a desired route for an input chord (key + mods).
 // Return true if the route is available this frame.
 // - Routes and key ownership are attributed at the beginning of next frame based on best score and mod state.
 //   (Conceptually this does a "Submit for next frame" + "Test for current frame".
@@ -11034,7 +11034,7 @@ static void ImGui::NavProcessItem()
     }
     const ImRect nav_bb = g.LastItemData.NavRect;
 
-    // Process Init Request
+    // Process Init Connection
     if (g.NavInitRequest && g.NavLayer == window->DC.NavLayerCurrent && (item_flags & ImGuiItemFlags_Disabled) == 0)
     {
         // Even if 'ImGuiItemFlags_NoNavDefaultFocus' is on (typically collapse/close button) we record the first ResultId so they can be used as a fallback
@@ -11050,7 +11050,7 @@ static void ImGui::NavProcessItem()
         }
     }
 
-    // Process Move Request (scoring for navigation)
+    // Process Move Connection (scoring for navigation)
     // FIXME-NAV: Consider policy for double scoring (scoring from NavScoringRect + scoring from a rect wrapped according to current wrapping policy)
     if (g.NavMoveScoringItems && (item_flags & ImGuiItemFlags_Disabled) == 0)
     {
@@ -11806,7 +11806,7 @@ void ImGui::NavMoveRequestApplyResult()
     SetNavID(result->ID, g.NavLayer, result->FocusScopeId, result->RectRel);
 
     // Restore last preferred position for current axis
-    // (storing in RootWindowForNav-> as the info is desirable at the beginning of a Move Request. In theory all storage should use RootWindowForNav..)
+    // (storing in RootWindowForNav-> as the info is desirable at the beginning of a Move Connection. In theory all storage should use RootWindowForNav..)
     if ((g.NavMoveFlags & ImGuiNavMoveFlags_IsTabbing) == 0)
     {
         preferred_scoring_pos_rel[axis] = result->RectRel.GetCenter()[axis];

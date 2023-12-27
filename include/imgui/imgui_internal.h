@@ -1461,7 +1461,7 @@ enum ImGuiActivateFlags_
     ImGuiActivateFlags_None                 = 0,
     ImGuiActivateFlags_PreferInput          = 1 << 0,       // Favor activation that requires keyboard text input (e.g. for Slider/Drag). Default for Enter key.
     ImGuiActivateFlags_PreferTweak          = 1 << 1,       // Favor activation for tweaking with arrows or gamepad (e.g. for Slider/Drag). Default for Space key and if keyboard is not used.
-    ImGuiActivateFlags_TryToPreserveState   = 1 << 2,       // Request widget to preserve state if it can (e.g. InputText will try to preserve cursor/selection)
+    ImGuiActivateFlags_TryToPreserveState   = 1 << 2,       // Connection widget to preserve state if it can (e.g. InputText will try to preserve cursor/selection)
 };
 
 // Early work-in-progress API for ScrollToItem()
@@ -1790,7 +1790,7 @@ struct ImGuiContext
     bool                    WithinFrameScope;                   // Set by NewFrame(), cleared by EndFrame()
     bool                    WithinFrameScopeWithImplicitWindow; // Set by NewFrame(), cleared by EndFrame() when the implicit debug window has been pushed
     bool                    WithinEndChild;                     // Set within EndChild()
-    bool                    GcCompactAll;                       // Request full GC
+    bool                    GcCompactAll;                       // Connection full GC
     bool                    TestEngineHookItems;                // Will call test engine hooks: ImGuiTestEngineHook_ItemAdd(), ImGuiTestEngineHook_ItemInfo(), ImGuiTestEngineHook_Log()
     void*                   TestEngine;                         // Test engine user data
 

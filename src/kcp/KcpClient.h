@@ -11,12 +11,15 @@
 
 #include <string>
 #include <chrono>
+#include "map"
+#include "vector"
 #include "iostream"
 #include "fstream"
+#include "Connection.hpp"
 
 #include <asio.hpp>
 
-using std::ofstream, std::ios;
+using std::ofstream, std::ios, std::vector, std::string, std::map;
 
 class KCPClient {
 public:
@@ -31,9 +34,7 @@ public:
 
     void update();
 
-    void send(const char *data, size_t length) {
-        ikcp_send(kcp, data, length);
-    }
+    void send(const string& url, const char *data, size_t length);
 
     void start_receive();
     void on_receive(const char *data, size_t length);
@@ -45,8 +46,14 @@ private:
     asio::steady_timer *timer;
     std::array<char, 1024> receive_buffer{};
     std::array<char, 1024> file_buffer{};
+    void check_need_file(const Connection& connection);
     ofstream fout;
     ikcpcb *kcp;
+
+    string waiting_file_name;
+    string ending_asserting_string;
+    string waiting_url;
+    int waiting_file_size = 0;
 
     DataWrapper* data_wrapper;
 

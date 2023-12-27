@@ -11,7 +11,12 @@
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <tchar.h>
+#include "vector"
+#include "string"
 #include "Data/DataWrapper.hpp"
+#include "kcp/Connection.hpp"
+
+using std::vector, std::string;
 
 #ifdef _DEBUG
 #define DX12_ENABLE_DEBUG_LAYER
@@ -21,6 +26,8 @@
 
 #include <dxgidebug.h>
 
+#include <utility>
+
 #pragma comment(lib, "dxguid.lib")
 #endif
 
@@ -29,7 +36,20 @@ struct FrameContext {
     UINT64 fence_value;
 };
 
-// Data
+struct GuiData {
+    vector<string> file_list;
+    int selected_file_index = -1;
+    bool could_play = false;
+    enum playing_state {
+        playing,
+        paused,
+        stopped
+    } state = stopped;
+};
+
+static GuiData gui_data;
+
+// DX 12 global variables
 static int const NUM_FRAMES_IN_FLIGHT = 3;
 static FrameContext g_frame_context[NUM_FRAMES_IN_FLIGHT] = {};
 static UINT g_frame_index = 0;
@@ -63,14 +83,62 @@ FrameContext *wait_for_next_frame_resources();
 
 LRESULT WINAPI wnd_proc(HWND h_wnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
+// The key is the url, the value is the callback function
+static map<string, std::function<void(const std::string&)>> receive_buffer_map;
+
+void send_request(const Connection& connection, DataWrapper *data_wrapper, std::function<void(const std::string&)> callback = [](const std::string&){}) {
+    data_wrapper->send_queue.push(connection.to_json());
+    receive_buffer_map[connection.get_url()] = std::move(callback);
+}
+
+// child window
+void render_player_window(const char *title, GuiData::playing_state &state, DataWrapper *data_wrapper) {
+    ImGui::Begin(title);
+    switch (state) {
+        case GuiData::stopped:
+            if (ImGui::Button("Play")) {
+                // send play request
+                string url = "file";
+                Connection request(url, {title});
+                state = GuiData::playing;
+                send_request(request, data_wrapper, [](const string& json) {
+                    // TODO: define the callback function
+                    gui_data.could_play = true;
+                });
+                // Disable playing until the file received
+                gui_data.could_play = false;
+            }
+            break;
+        case GuiData::playing:
+            if (ImGui::Button("Pause")) {
+                // send pause request
+                // TODO: Pause the music
+                state = GuiData::paused;
+            }
+            // TODO: Add a progress bar
+            // We do not need to add "stop" button, which will lead the ui and the logic to a mess.
+            break;
+        case GuiData::paused:
+            if (ImGui::Button("Resume")) {
+                // resume the music
+                state = GuiData::playing;
+            }
+            break;
+    }
+    ImGui::End();
+
+    // TODO: manage playing state
+}
+
 // Main code
-int render(DataWrapper* data_wrapper) {
+int render(DataWrapper *data_wrapper) {
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = {sizeof(wc), CS_CLASSDC, wnd_proc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr,
                       nullptr, L"ImGui Example", nullptr};
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX12 Example", WS_OVERLAPPEDWINDOW, 100, 100, 1280,
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX12 Example", WS_OVERLAPPEDWINDOW, 100, 100,
+                                1280,
                                 800, nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize Direct3D
@@ -103,8 +171,18 @@ int render(DataWrapper* data_wrapper) {
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    // data init
-    DataWrapper *data = data_wrapper;
+    // data_async init
+    DataWrapper *data_async = data_wrapper;
+
+    // init music list
+    // do not open the ui before init so use method wait
+    string list_json = data_async->recv_queue.wait_and_pop().value();
+    Connection connection_music_list = Connection::from_json(list_json);
+    while (connection_music_list.get_url() != "music_list") {}
+    // I can't image what will happen if the server send a res without url "music_list"
+    // If this happens, the client will crash.
+    // If this happens, I will add a check in the future.
+    gui_data.file_list = connection_music_list.get_params();
 
     // Main loop
     bool done = false;
@@ -126,17 +204,38 @@ int render(DataWrapper* data_wrapper) {
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        // Manage the data in the DataWrapper
+        {
+            optional<string> res_str = data_async->recv_queue.try_pop();
+            while ((res_str = data_async->recv_queue.try_pop()) != nullopt){
+                // if is waiting for a file, then check if the file is received(The procedure of receiving a file is
+                // finished in asio thread)
+                std::cout << "receive: " << res_str.value() << std::endl;
+                Connection res = Connection::from_json(res_str.value());
+                if (receive_buffer_map.count(res.get_url()) != 0) {
+                    receive_buffer_map[res.get_url()](res_str.value());
+                }
+            }
+        }
 
         // Show the main ui -- selector
         {
-            // TODO: add a selector
             ImGui::Begin("Selector");
+            for (int i = 0; i < gui_data.file_list.size(); ++i) {
+                if (ImGui::Selectable(gui_data.file_list[i].c_str(), gui_data.selected_file_index == i)) {
+                    gui_data.selected_file_index = i;
+                    gui_data.state = GuiData::stopped;
+                }
+            }
             ImGui::End();
         }
 
         // Show the main ui -- player
         {
-
+            if (gui_data.selected_file_index != -1) {
+                string url = gui_data.file_list[gui_data.selected_file_index];
+                render_player_window(url.c_str(), gui_data.state, data_async);
+            }
         }
 
         // Rendering
@@ -161,7 +260,8 @@ int render(DataWrapper* data_wrapper) {
                                                  clear_color.z * clear_color.w, clear_color.w};
         g_pd3d_command_list->ClearRenderTargetView(g_main_render_target_descriptor[back_buffer_idx],
                                                    clear_color_with_alpha, 0, nullptr);
-        g_pd3d_command_list->OMSetRenderTargets(1, &g_main_render_target_descriptor[back_buffer_idx], FALSE, nullptr);
+        g_pd3d_command_list->OMSetRenderTargets(1, &g_main_render_target_descriptor[back_buffer_idx], FALSE,
+                                                nullptr);
         g_pd3d_command_list->SetDescriptorHeaps(1, &g_pd3d_srv_desc_heap);
         ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), g_pd3d_command_list);
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -190,8 +290,8 @@ int render(DataWrapper* data_wrapper) {
     ::DestroyWindow(hwnd);
     ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
 
-    // data setting
-    data->should_close.set(true);
+    // data_async setting
+    data_async->should_close.set(true);
 
     return 0;
 }
@@ -253,7 +353,7 @@ bool create_deviceD3D(HWND hWnd) {
 
         SIZE_T rtvDescriptorSize = g_pd3d_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = g_pd3d_rtv_desc_heap->GetCPUDescriptorHandleForHeapStart();
-        for (auto & i : g_main_render_target_descriptor) {
+        for (auto &i: g_main_render_target_descriptor) {
             i = rtvHandle;
             rtvHandle.ptr += rtvDescriptorSize;
         }
@@ -277,7 +377,7 @@ bool create_deviceD3D(HWND hWnd) {
             return false;
     }
 
-    for (auto & i : g_frame_context)
+    for (auto &i: g_frame_context)
         if (g_pd3d_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
                                                   IID_PPV_ARGS(&i.command_allocator)) != S_OK)
             return false;
@@ -299,7 +399,8 @@ bool create_deviceD3D(HWND hWnd) {
         IDXGISwapChain1 *swapChain1 = nullptr;
         if (CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory)) != S_OK)
             return false;
-        if (dxgiFactory->CreateSwapChainForHwnd(g_pd3d_command_queue, hWnd, &sd, nullptr, nullptr, &swapChain1) != S_OK)
+        if (dxgiFactory->CreateSwapChainForHwnd(g_pd3d_command_queue, hWnd, &sd, nullptr, nullptr, &swapChain1) !=
+            S_OK)
             return false;
         if (swapChain1->QueryInterface(IID_PPV_ARGS(&g_pswap_chain)) != S_OK)
             return false;
@@ -321,7 +422,7 @@ void cleanup_device_D3D() {
         g_pswap_chain = nullptr;
     }
     if (g_hswap_chain_waitable_object != nullptr) { CloseHandle(g_hswap_chain_waitable_object); }
-    for (auto & i : g_frame_context)
+    for (auto &i: g_frame_context)
         if (i.command_allocator) {
             i.command_allocator->Release();
             i.command_allocator = nullptr;
@@ -376,7 +477,7 @@ void create_render_target() {
 void cleanup_render_target() {
     wait_for_last_submitted_frame();
 
-    for (auto & i : g_main_render_target_resource)
+    for (auto &i: g_main_render_target_resource)
         if (i) {
             i->Release();
             i = nullptr;

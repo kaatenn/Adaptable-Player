@@ -1588,7 +1588,7 @@ const char* ImGui::TableGetColumnName(const ImGuiTable* table, int column_n)
 // Change user accessible enabled/disabled state of a column (often perceived as "showing/hiding" from users point of view)
 // Note that end-user can use the context menu to change this themselves (right-click in headers, or right-click in columns body with ImGuiTableFlags_ContextMenuInBody)
 // - Require table to have the ImGuiTableFlags_Hideable flag because we are manipulating user accessible state.
-// - Request will be applied during next layout, which happens on the first call to TableNextRow() after BeginTable().
+// - Connection will be applied during next layout, which happens on the first call to TableNextRow() after BeginTable().
 // - For the getter you can test (TableGetColumnFlags() & ImGuiTableColumnFlags_IsEnabled) != 0.
 // - Alternative: the ImGuiTableColumnFlags_Disabled is an overriding/master disable flag which will also hide the column from context menu.
 void ImGui::TableSetColumnEnabled(int column_n, bool enabled)
@@ -3640,7 +3640,7 @@ void ImGui::DebugNodeTable(ImGuiTable* table)
         ImFormatString(buf, IM_ARRAYSIZE(buf),
             "Column %d order %d '%s': offset %+.2f to %+.2f%s\n"
             "Enabled: %d, VisibleX/Y: %d/%d, RequestOutput: %d, SkipItems: %d, DrawChannels: %d,%d\n"
-            "WidthGiven: %.1f, Request/Auto: %.1f/%.1f, StretchWeight: %.3f (%.1f%%)\n"
+            "WidthGiven: %.1f, Connection/Auto: %.1f/%.1f, StretchWeight: %.3f (%.1f%%)\n"
             "MinX: %.1f, MaxX: %.1f (%+.1f), ClipRect: %.1f to %.1f (+%.1f)\n"
             "ContentWidth: %.1f,%.1f, HeadersUsed/Ideal %.1f/%.1f\n"
             "Sort: %d%s, UserID: 0x%08X, Flags: 0x%04X: %s%s%s..",

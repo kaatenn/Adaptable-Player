@@ -342,7 +342,7 @@ public:
   {
   }
 
-  /// Request the system executor to invoke the given function object.
+  /// Connection the system executor to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object will always be executed inside this function.
@@ -357,7 +357,7 @@ public:
   template <typename Function, typename OtherAllocator>
   void dispatch(Function&& f, const OtherAllocator& a) const;
 
-  /// Request the system executor to invoke the given function object.
+  /// Connection the system executor to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object will never be executed inside this function.
@@ -373,7 +373,7 @@ public:
   template <typename Function, typename OtherAllocator>
   void post(Function&& f, const OtherAllocator& a) const;
 
-  /// Request the system executor to invoke the given function object.
+  /// Connection the system executor to invoke the given function object.
   /**
    * This function is used to ask the executor to execute the given function
    * object. The function object will never be executed inside this function.
