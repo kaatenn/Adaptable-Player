@@ -14,7 +14,10 @@
 #include "vector"
 #include "string"
 #include "Data/DataWrapper.hpp"
-#include "kcp/Connection.hpp"
+#include "EP.h"
+#include "json.hpp"
+
+using ::EP;
 
 using std::vector, std::string;
 
@@ -39,12 +42,16 @@ struct FrameContext {
 struct GuiData {
     vector<string> file_list;
     int selected_file_index = -1;
-    bool could_play = false;
     enum playing_state {
         playing,
         paused,
         stopped
     } state = stopped;
+
+    enum protocol {
+        kcp,
+        tcp
+    } protocol = kcp;
 };
 
 static GuiData gui_data;
@@ -86,9 +93,19 @@ LRESULT WINAPI wnd_proc(HWND h_wnd, UINT msg, WPARAM w_param, LPARAM l_param);
 // The key is the url, the value is the callback function
 static map<string, std::function<void(const std::string&)>> receive_buffer_map;
 
-void send_request(const Connection& connection, DataWrapper *data_wrapper, std::function<void(const std::string&)> callback = [](const std::string&){}) {
-    data_wrapper->send_queue.push(connection.to_json());
-    receive_buffer_map[connection.get_url()] = std::move(callback);
+ProducerConsumerQueue<string>* get_protocol_send_queue(DataWrapper *data_wrapper) {
+    switch (gui_data.protocol) {
+        case GuiData::kcp:
+            return &data_wrapper->kcp_send_queue;
+        case GuiData::tcp:
+            return &data_wrapper->tcp_send_queue;
+    }
+}
+
+void send_request(const EP& ep, DataWrapper* data_wrapper, std::function<void(const std::string&)> callback = [](const
+        std::string&){}) {
+    get_protocol_send_queue(data_wrapper)->push(ep.serialize());
+    receive_buffer_map[ep.get_url()] = std::move(callback);
 }
 
 // child window
@@ -99,14 +116,14 @@ void render_player_window(const char *title, GuiData::playing_state &state, Data
             if (ImGui::Button("Play")) {
                 // send play request
                 string url = "file";
-                Connection request(url, {title});
+                nlohmann::json json;
+                json["file_name"] = gui_data.file_list[gui_data.selected_file_index];
+                string params = json.dump();
+                EP request(url, params);
                 state = GuiData::playing;
-                send_request(request, data_wrapper, [](const string& json) {
-                    // TODO: define the callback function
-                    gui_data.could_play = true;
+                send_request(request, data_wrapper, [](const string& params) {
+                    // Nothing need to do
                 });
-                // Disable playing until the file received
-                gui_data.could_play = false;
             }
             break;
         case GuiData::playing:
@@ -176,13 +193,13 @@ int render(DataWrapper *data_wrapper) {
 
     // init music list
     // do not open the ui before init so use method wait
-    string list_json = data_async->recv_queue.wait_and_pop().value();
-    Connection connection_music_list = Connection::from_json(list_json);
-    while (connection_music_list.get_url() != "music_list") {}
-    // I can't image what will happen if the server send a res without url "music_list"
-    // If this happens, the client will crash.
-    // If this happens, I will add a check in the future.
-    gui_data.file_list = connection_music_list.get_params();
+    string url = "music_list";
+    EP init_request(url);
+    send_request(init_request, data_async);
+    string init_res_str = data_async->recv_queue.wait_and_pop().value();
+    EP init_response = EP::deserialize(init_res_str);
+    nlohmann::json json = nlohmann::json::parse(init_response.get_params());
+    gui_data.file_list = json["music_list"].get<vector<string>>();
 
     // Main loop
     bool done = false;
@@ -210,17 +227,17 @@ int render(DataWrapper *data_wrapper) {
             while ((res_str = data_async->recv_queue.try_pop()) != nullopt){
                 // if is waiting for a file, then check if the file is received(The procedure of receiving a file is
                 // finished in asio thread)
-                std::cout << "receive: " << res_str.value() << std::endl;
-                Connection res = Connection::from_json(res_str.value());
+                std::cout << "receive: " << res_str.value().size() << std::endl;
+                EP res = EP::deserialize(res_str.value());
                 if (receive_buffer_map.count(res.get_url()) != 0) {
-                    receive_buffer_map[res.get_url()](res_str.value());
+                    receive_buffer_map[res.get_url()](res.get_params());
                 }
             }
         }
 
-        // Show the main ui -- selector
+        // Show the main ui -- Music Selector
         {
-            ImGui::Begin("Selector");
+            ImGui::Begin("Music Selector");
             for (int i = 0; i < gui_data.file_list.size(); ++i) {
                 if (ImGui::Selectable(gui_data.file_list[i].c_str(), gui_data.selected_file_index == i)) {
                     gui_data.selected_file_index = i;
@@ -236,6 +253,19 @@ int render(DataWrapper *data_wrapper) {
                 string url = gui_data.file_list[gui_data.selected_file_index];
                 render_player_window(url.c_str(), gui_data.state, data_async);
             }
+        }
+
+        // Show the main ui -- Protocol Selector
+        {
+            ImGui::Begin("Protocol Selector");
+            if (ImGui::RadioButton("KCP", gui_data.protocol == GuiData::kcp)) {
+                gui_data.protocol = GuiData::kcp;
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("TCP", gui_data.protocol == GuiData::tcp)) {
+                gui_data.protocol = GuiData::tcp;
+            }
+            ImGui::End();
         }
 
         // Rendering

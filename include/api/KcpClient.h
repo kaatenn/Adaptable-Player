@@ -15,9 +15,8 @@
 #include "vector"
 #include "iostream"
 #include "fstream"
-#include "Connection.hpp"
 
-#include <asio.hpp>
+#include "asio.hpp"
 
 using std::ofstream, std::ios, std::vector, std::string, std::map;
 
@@ -25,7 +24,7 @@ class KCPClient {
 public:
     bool should_exit = false;
 
-    KCPClient(asio::io_context& io_context, const std::string& server_ip, unsigned short server_port, DataWrapper*
+    KCPClient(const std::string& server_ip, unsigned short server_port, DataWrapper*
     data_wrapper);
 
     ~KCPClient() {
@@ -36,17 +35,14 @@ public:
 
     void send(const string& url, const char *data, size_t length);
 
-    void start_receive();
-    void on_receive(const char *data, size_t length);
 
 private:
-    asio::io_context& io_context;
+    asio::io_context io_context;
     asio::ip::udp::socket socket;
     asio::ip::udp::endpoint server_endpoint;
     asio::steady_timer *timer;
     std::array<char, 1024> receive_buffer{};
     std::array<char, 1024> file_buffer{};
-    void check_need_file(const Connection& connection);
     ofstream fout;
     ikcpcb *kcp;
 
@@ -56,6 +52,9 @@ private:
     int waiting_file_size = 0;
 
     DataWrapper* data_wrapper;
+
+    void start_receive();
+    void on_receive(const char *data, size_t length);
 
     static int udp_output(const char *buf, int len, ikcpcb *kcp, void *user);
 
