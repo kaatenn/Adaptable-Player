@@ -22,6 +22,7 @@ KCPClient::KCPClient(const std::string &server_ip, unsigned short server_port,
         }
     });
     ikcp_nodelay(kcp, 1, 10, 2, 1);
+    asio_thread = std::thread([this]() { io_context.run(); });
 }
 
 void KCPClient::start_receive() {
@@ -105,5 +106,10 @@ void KCPClient::update() {
 void KCPClient::send(const char *data, size_t length) {
     ikcp_send(kcp, data, length);
 }
+
+void KCPClient::run_client() {
+    asio_thread.join();
+}
+
 
 

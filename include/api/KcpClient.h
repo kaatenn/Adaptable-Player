@@ -37,6 +37,8 @@ public:
 
     void send(const char *data, size_t length);
 
+    void run_client();
+
 
 private:
     asio::io_context io_context;
@@ -48,14 +50,11 @@ private:
     ofstream fout;
     ikcpcb *kcp;
 
-    string waiting_file_name;
-    string ending_asserting_string;
-    string waiting_url;
-    int waiting_file_size = 0;
     IUINT32 kcp_conv;
 
     DataWrapper* data_wrapper;
     ApplicationProtocolBase* application_protocol;
+    std::thread asio_thread;
 
     void start_receive();
     void on_receive(const char *data, size_t length);

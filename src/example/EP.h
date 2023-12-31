@@ -8,8 +8,7 @@
 using kaatenn::ApplicationProtocolBase;
 class EP: public ApplicationProtocolBase {
 public:
-    EP(std::string url = *new std::string(), std::string params = *new std::string(), std::string file_stream = *new
-            std::string());
+    EP(std::string url = *new std::string(), std::string params = *new std::string(), std::string file_stream = *new std::string());
     std::string serialize() const override;
     static EP deserialize(const std::string& data);
     bool process_segment(char* segment, int recv_size) override;
@@ -17,8 +16,9 @@ public:
     std::string get_response() override;
     std::string get_params() const override;
     void set_res_data_length(int length);
-    std::string get_url() const;
     void reset() override;
+
+    std::string get_url() const;
 
 private:
     // Protocol data

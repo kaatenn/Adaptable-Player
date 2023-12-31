@@ -19,7 +19,7 @@ namespace kaatenn {
          *
          * @return A string representation of the object's state.
          */
-        virtual std::string serialize() const = 0;
+        [[nodiscard]] virtual std::string serialize() const = 0;
 
 
         /**

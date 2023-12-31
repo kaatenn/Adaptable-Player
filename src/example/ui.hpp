@@ -51,7 +51,7 @@ struct GuiData {
     enum protocol {
         kcp,
         tcp
-    } protocol = kcp;
+    } protocol = tcp;
 };
 
 static GuiData gui_data;
@@ -152,9 +152,9 @@ int render(DataWrapper *data_wrapper) {
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = {sizeof(wc), CS_CLASSDC, wnd_proc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr,
-                      nullptr, L"ImGui Example", nullptr};
+                      nullptr, L"App Example", nullptr};
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui DirectX12 Example", WS_OVERLAPPEDWINDOW, 100, 100,
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"App Example", WS_OVERLAPPEDWINDOW, 100, 100,
                                 1280,
                                 800, nullptr, nullptr, wc.hInstance, nullptr);
 

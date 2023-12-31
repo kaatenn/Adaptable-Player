@@ -18,6 +18,8 @@ public:
     data_wrapper, ApplicationProtocolBase* application_protocol);
 
     void send(const char* data, size_t length);
+
+    void run_client();
 private:
     asio::io_context io_context;
     asio::ip::tcp::socket socket;
@@ -25,6 +27,8 @@ private:
     asio::steady_timer *timer;
     std::array<char, 1024> receive_buffer{};
     DataWrapper* data_wrapper;
+
+    std::thread asio_thread;
 
     ApplicationProtocolBase* application_protocol;
 

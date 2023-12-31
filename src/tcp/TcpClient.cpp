@@ -25,6 +25,7 @@ TCPClient::TCPClient(const string &server_ip, unsigned short server_port,
         }
     });
     do_receive();
+    asio_thread = std::thread([this]() { io_context.run(); });
 }
 
 void TCPClient::send(const char* data, size_t length) {
@@ -44,7 +45,7 @@ void TCPClient::do_receive() {
     socket.async_read_some(asio::buffer(receive_buffer), [this](std::error_code ec, std::size_t bytes_recvd) {
         if (!ec && bytes_recvd > 0) {
             if (application_protocol->process_segment(receive_buffer.data(), bytes_recvd)) {
-                data_wrapper->recv_queue.push(application_protocol->get_params());
+                data_wrapper->recv_queue.push(application_protocol->serialize());
                 application_protocol->reset();
                 start_receive();
             }
@@ -84,6 +85,14 @@ void TCPClient::update() {
     timer->async_wait([this](std::error_code ec) {
         if (!ec) {
             this->update();
+        } else {
+            std::cout << "timer error: " << ec.message() << std::endl;
         }
     });
 }
+
+void TCPClient::run_client() {
+    asio_thread.join();
+}
+
+
