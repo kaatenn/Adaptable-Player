@@ -11,7 +11,7 @@ KCPClient::KCPClient(const std::string &server_ip, unsigned short server_port,
           , kcp_conv(kcp_conv), application_protocol(application_protocol)
           {
     start_receive();
-    kcp = ikcp_create(kcp_conv, (void *) this);
+    kcp = ikcp_create(this->kcp_conv, (void *) this);
     socket.connect(server_endpoint);
     ikcp_setoutput(kcp, &KCPClient::udp_output);
 
@@ -31,6 +31,9 @@ void KCPClient::start_receive() {
                 if (!ec && bytes_recvd > 0) {
                     on_receive(receive_buffer.data(), bytes_recvd); // unlike tcp, kcp may slice the buffer, so we
                     // need to manage the buffer in on_receive
+                } else {
+                    std::cout << "receive error: " << ec.message() << std::endl;
+                    exit(EXIT_FAILURE);
                 }
             }
     );
@@ -43,32 +46,10 @@ void KCPClient::on_receive(const char *data, size_t length) {
     int recv_size;
 
     while ((recv_size = ikcp_recv(kcp, file_buffer.data(), file_buffer.size())) > 0) {
-        // When we could successfully receive a legal json, we assert the ending of the response.
-        ending_asserting_string.append(file_buffer.data(), recv_size);
-        if (waiting_file_name.empty()){
-            std::fill(file_buffer.begin(), file_buffer.end(), 0);
-            Connection response = Connection::from_json(ending_asserting_string);
-            check_need_file(response);
-            if (response.get_url() != "error" && waiting_file_name.empty()) {
-                std::cout << "receive data: " << ending_asserting_string << std::endl;
-                data_wrapper->recv_queue.push(response.to_json());
-                ending_asserting_string.clear();
-            }
-        } else {
-            waiting_file_size -= recv_size;
-            if (!fout.is_open())
-                fout.open(waiting_file_name, ios::binary | ios::out);
-            fout.write(file_buffer.data(), recv_size);
-            std::cout << "receive file: " << recv_size << std::endl;
-            std::fill(file_buffer.begin(), file_buffer.end(), 0);
-            if (waiting_file_size <= 0) {
-                fout.close();
-                waiting_file_name.clear();
-                ending_asserting_string.clear();
-                data_wrapper->recv_queue.push(Connection(waiting_url, {"file received"}).to_json());
-                waiting_url.clear();
-                std::cout << "file received" << std::endl;
-            }
+        if (application_protocol->process_segment(file_buffer.data(), recv_size)) {
+            string res = application_protocol->get_response();
+            this->send(res.data(), res.size());\
+            application_protocol->reset();
         }
     }
 
@@ -121,7 +102,7 @@ void KCPClient::update() {
     });
 }
 
-void KCPClient::send(const string &url, const char *data, size_t length) {
+void KCPClient::send(const char *data, size_t length) {
     ikcp_send(kcp, data, length);
 }
 

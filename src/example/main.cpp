@@ -25,6 +25,7 @@ int main() {
         unsigned short port = 12345;
         std::string server_ip = "127.0.0.1";
         KCPClient client(server_ip, port, &data_wrapper, 0x11223344, &ep_kcp);
+        std::cout << "[kcp init]success" << std::endl;
 
         // tcp asio init
         EP ep_tcp;
@@ -32,6 +33,7 @@ int main() {
         std::string tcp_server_ip = "127.0.0.1";
         asio::io_context tcp_io_context;
         TCPClient tcp_client(tcp_server_ip, tcp_port, &data_wrapper, &ep_tcp);
+        std::cout << "[tcp init]success" << std::endl;
 
         // thread init
         try {

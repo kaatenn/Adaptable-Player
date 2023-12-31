@@ -35,7 +35,7 @@ public:
 
     void update();
 
-    void send(const string& url, const char *data, size_t length);
+    void send(const char *data, size_t length);
 
 
 private:

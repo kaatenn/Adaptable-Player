@@ -30,6 +30,7 @@ private:
 
     bool should_exit = false;
 
+    void do_receive();
     void start_receive();
 
     void update();

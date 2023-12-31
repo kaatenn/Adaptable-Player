@@ -24,7 +24,7 @@ TCPClient::TCPClient(const string &server_ip, unsigned short server_port,
             this->update();
         }
     });
-    start_receive();
+    do_receive();
 }
 
 void TCPClient::send(const char* data, size_t length) {
@@ -39,17 +39,24 @@ void TCPClient::send(const char* data, size_t length) {
     });
 }
 
-void TCPClient::start_receive() {
+void TCPClient::do_receive() {
     receive_buffer.fill(0);
     socket.async_read_some(asio::buffer(receive_buffer), [this](std::error_code ec, std::size_t bytes_recvd) {
         if (!ec && bytes_recvd > 0) {
             if (application_protocol->process_segment(receive_buffer.data(), bytes_recvd)) {
                 data_wrapper->recv_queue.push(application_protocol->get_params());
                 application_protocol->reset();
+                start_receive();
             }
+        } else{
+            std::cout << "receive error: " << ec.message() << std::endl;
+            exit(EXIT_FAILURE);
         }
     });
-    start_receive();
+}
+
+void TCPClient::start_receive() {
+    do_receive();
 }
 
 void TCPClient::update() {
