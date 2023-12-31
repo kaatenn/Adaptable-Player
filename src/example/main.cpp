@@ -5,7 +5,7 @@
 
 #include "api/KcpClient.h"
 #include "example/ui.hpp"
-#include "Data/DataWrapper.hpp"
+#include "detail/DataWrapper.hpp"
 #include "api/TcpClient.h"
 
 using std::string;

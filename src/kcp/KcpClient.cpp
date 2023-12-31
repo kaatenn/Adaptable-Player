@@ -48,8 +48,7 @@ void KCPClient::on_receive(const char *data, size_t length) {
 
     while ((recv_size = ikcp_recv(kcp, file_buffer.data(), file_buffer.size())) > 0) {
         if (application_protocol->process_segment(file_buffer.data(), recv_size)) {
-            string res = application_protocol->get_response();
-            this->send(res.data(), res.size());\
+            data_wrapper->recv_queue.push(application_protocol->serialize());
             application_protocol->reset();
         }
     }

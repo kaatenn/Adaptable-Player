@@ -13,7 +13,7 @@
 #include <tchar.h>
 #include "vector"
 #include "string"
-#include "Data/DataWrapper.hpp"
+#include "detail/DataWrapper.hpp"
 #include "EP.h"
 #include "json.hpp"
 
@@ -133,10 +133,10 @@ void render_player_window(const char *title, GuiData::playing_state &state, Data
         case GuiData::playing:
             if (ImGui::Button("Pause")) {
                 // send pause request
-                // TODO: Pause the music
+                // Pause the music
                 state = GuiData::paused;
             }
-            // TODO: Add a progress bar
+            // Add a progress bar
             // We do not need to add "stop" button, which will lead the ui and the logic to a mess.
             break;
         case GuiData::paused:
@@ -148,7 +148,7 @@ void render_player_window(const char *title, GuiData::playing_state &state, Data
     }
     ImGui::End();
 
-    // TODO: manage playing state
+    // manage playing state
 }
 
 // Main code
@@ -234,7 +234,6 @@ int render(DataWrapper *data_wrapper) {
                 EP res = EP::deserialize(res_str.value());
                 if (receive_buffer_map.count(res.get_url()) != 0) {
                     receive_buffer_map[res.get_url()](res);
-                    std::cout << "receive a file" << std::endl;
                 }
             }
         }

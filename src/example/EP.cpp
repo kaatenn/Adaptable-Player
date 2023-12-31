@@ -9,7 +9,7 @@
 
 bool EP::process_segment(char *segment, int recv_size) {
     receive_buffer.append(segment, recv_size);
-    std::cout << "recvd: " << recv_size << std::endl;
+    /*std::cout << "recvd: " << recv_size << std::endl;*/
     if (length == 0 || length == 6) {
         // length == 6 means that the init of the instance with length 0 + 0 + 0 + 6
         if (receive_buffer.size() >= 4) {

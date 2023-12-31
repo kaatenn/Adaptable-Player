@@ -6,7 +6,7 @@
 #define ADAPTABLE_UPLOADER_KCPCLIENT_H
 
 #include "ikcp.h"
-#include "Data/DataWrapper.hpp"
+#include "detail/DataWrapper.hpp"
 // TODO: Add DataWrapper
 
 #include <string>

@@ -5,7 +5,7 @@
 #ifndef ADAPTABLE_UPLOADER_TCPCLIENT_H
 #define ADAPTABLE_UPLOADER_TCPCLIENT_H
 
-#include "Data/DataWrapper.hpp"
+#include "detail/DataWrapper.hpp"
 #include "fstream"
 #include "ApplicationProtocolBase.h"
 
