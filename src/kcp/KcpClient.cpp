@@ -5,11 +5,13 @@
 #include "api/KcpClient.h"
 
 KCPClient::KCPClient(const std::string &server_ip, unsigned short server_port,
-                     DataWrapper *data_wrapper)
+                     DataWrapper *data_wrapper, IUINT32 kcp_conv, ApplicationProtocolBase *application_protocol)
         : socket(io_context, asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
-          server_endpoint(asio::ip::address::from_string(server_ip), server_port), data_wrapper(data_wrapper) {
+          server_endpoint(asio::ip::address::from_string(server_ip), server_port), data_wrapper(data_wrapper)
+          , kcp_conv(kcp_conv), application_protocol(application_protocol)
+          {
     start_receive();
-    kcp = ikcp_create(0x11223344, (void *) this);
+    kcp = ikcp_create(kcp_conv, (void *) this);
     socket.connect(server_endpoint);
     ikcp_setoutput(kcp, &KCPClient::udp_output);
 
@@ -27,7 +29,8 @@ void KCPClient::start_receive() {
             asio::buffer(receive_buffer), server_endpoint,
             [this](std::error_code ec, std::size_t bytes_recvd) {
                 if (!ec && bytes_recvd > 0) {
-                    on_receive(receive_buffer.data(), bytes_recvd);
+                    on_receive(receive_buffer.data(), bytes_recvd); // unlike tcp, kcp may slice the buffer, so we
+                    // need to manage the buffer in on_receive
                 }
             }
     );

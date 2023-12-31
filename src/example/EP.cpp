@@ -125,3 +125,18 @@ EP EP::deserialize(const string &data) {
     ep.process_segment(nullptr, 0);
     return ep;
 }
+
+void EP::reset() {
+    length = 0;
+    url_length = 0;
+    param_length = 0;
+    file_length = 0;
+    res_param_length = 0;
+    receive_buffer.clear();
+    url.clear();
+    params.clear();
+    file_stream.clear();
+    response.clear();
+    if (fin.is_open())
+        fin.close();
+}

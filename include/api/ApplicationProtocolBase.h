@@ -54,6 +54,8 @@ namespace kaatenn {
 
         virtual std::string get_params() const = 0;
 
+        virtual void reset() = 0;
+
         // Rule of five: allowing move operations while preventing copy operations.
         ApplicationProtocolBase() = default;
 

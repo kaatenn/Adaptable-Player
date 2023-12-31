@@ -17,15 +17,17 @@
 #include "fstream"
 
 #include "asio.hpp"
+#include "ApplicationProtocolBase.h"
 
 using std::ofstream, std::ios, std::vector, std::string, std::map;
+using kaatenn::ApplicationProtocolBase;
 
 class KCPClient {
 public:
     bool should_exit = false;
 
     KCPClient(const std::string& server_ip, unsigned short server_port, DataWrapper*
-    data_wrapper);
+    data_wrapper, IUINT32 kcp_conv, ApplicationProtocolBase* application_protocol);
 
     ~KCPClient() {
         ikcp_release(kcp);
@@ -50,8 +52,10 @@ private:
     string ending_asserting_string;
     string waiting_url;
     int waiting_file_size = 0;
+    IUINT32 kcp_conv;
 
     DataWrapper* data_wrapper;
+    ApplicationProtocolBase* application_protocol;
 
     void start_receive();
     void on_receive(const char *data, size_t length);

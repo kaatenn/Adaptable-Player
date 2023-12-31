@@ -11,7 +11,7 @@ TCPClient::TCPClient(const string &server_ip, unsigned short server_port,
                      (data_wrapper), resolver(io_context) {
     this->application_protocol = protocol;
     auto endpoint = resolver.resolve(server_ip, std::to_string(server_port));
-    asio::async_connect(socket, endpoint, [](std::error_code ec, asio::ip::tcp::endpoint endpoint) {
+    asio::async_connect(socket, endpoint, [](std::error_code ec, const asio::ip::tcp::endpoint& endpoint) {
         if (!ec) {
             std::cout << "connected to server: " << endpoint << std::endl;
         } else {
@@ -45,6 +45,7 @@ void TCPClient::start_receive() {
         if (!ec && bytes_recvd > 0) {
             if (application_protocol->process_segment(receive_buffer.data(), bytes_recvd)) {
                 data_wrapper->recv_queue.push(application_protocol->get_params());
+                application_protocol->reset();
             }
         }
     });
