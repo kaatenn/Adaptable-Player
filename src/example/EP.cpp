@@ -2,12 +2,14 @@
 // Created by 86137 on 2023/12/30.
 //
 
+#include <iostream>
 #include "EP.h"
 #include "UrlMap.hpp"
 #include "json.hpp"
 
 bool EP::process_segment(char *segment, int recv_size) {
     receive_buffer.append(segment, recv_size);
+    std::cout << "recvd: " << recv_size << std::endl;
     if (length == 0 || length == 6) {
         // length == 6 means that the init of the instance with length 0 + 0 + 0 + 6
         if (receive_buffer.size() >= 4) {
@@ -149,4 +151,8 @@ EP EP::deserialize(const string &data) {
     ep.params = data.substr(6 + ep.url_length, ep.param_length);
     ep.file_stream = data.substr(6 + ep.url_length + ep.param_length);
     return ep;
+}
+
+std::string EP::get_file_stream() const {
+    return file_stream;
 }

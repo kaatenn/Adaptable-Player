@@ -47,8 +47,8 @@ void TCPClient::do_receive() {
             if (application_protocol->process_segment(receive_buffer.data(), bytes_recvd)) {
                 data_wrapper->recv_queue.push(application_protocol->serialize());
                 application_protocol->reset();
-                start_receive();
             }
+            start_receive();
         } else{
             std::cout << "receive error: " << ec.message() << std::endl;
             exit(EXIT_FAILURE);

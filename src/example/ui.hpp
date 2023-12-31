@@ -51,7 +51,7 @@ struct GuiData {
     enum protocol {
         kcp,
         tcp
-    } protocol = tcp;
+    } protocol = kcp;
 };
 
 static GuiData gui_data;
@@ -91,7 +91,7 @@ FrameContext *wait_for_next_frame_resources();
 LRESULT WINAPI wnd_proc(HWND h_wnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
 // The key is the url, the value is the callback function
-static map<string, std::function<void(const std::string&)>> receive_buffer_map;
+static map<string, std::function<void(const EP&)>> receive_buffer_map;
 
 ProducerConsumerQueue<string>* get_protocol_send_queue(DataWrapper *data_wrapper) {
     switch (gui_data.protocol) {
@@ -102,8 +102,8 @@ ProducerConsumerQueue<string>* get_protocol_send_queue(DataWrapper *data_wrapper
     }
 }
 
-void send_request(const EP& ep, DataWrapper* data_wrapper, std::function<void(const std::string&)> callback = [](const
-        std::string&){}) {
+void send_request(const EP& ep, DataWrapper* data_wrapper, std::function<void(const EP&)> callback = [](const
+        EP&){}) {
     get_protocol_send_queue(data_wrapper)->push(ep.serialize());
     receive_buffer_map[ep.get_url()] = std::move(callback);
 }
@@ -117,12 +117,16 @@ void render_player_window(const char *title, GuiData::playing_state &state, Data
                 // send play request
                 string url = "file";
                 nlohmann::json json;
-                json["file_name"] = gui_data.file_list[gui_data.selected_file_index];
+                json["searching_file_name"] = gui_data.file_list[gui_data.selected_file_index];
                 string params = json.dump();
                 EP request(url, params);
                 state = GuiData::playing;
-                send_request(request, data_wrapper, [](const string& params) {
-                    // Nothing need to do
+                send_request(request, data_wrapper, [](const EP& ep) {
+                    nlohmann::json json = nlohmann::json::parse(ep.get_params());
+                    string file_name = json["file_name"];
+                    std::ofstream fout(file_name, std::ios::binary);
+                    fout.write(ep.get_file_stream().data(), ep.get_file_stream().size());
+                    fout.close();
                 });
             }
             break;
@@ -223,14 +227,14 @@ int render(DataWrapper *data_wrapper) {
 
         // Manage the data in the DataWrapper
         {
-            optional<string> res_str = data_async->recv_queue.try_pop();
+            optional<string> res_str;
             while ((res_str = data_async->recv_queue.try_pop()) != nullopt){
                 // if is waiting for a file, then check if the file is received(The procedure of receiving a file is
                 // finished in asio thread)
-                std::cout << "receive: " << res_str.value().size() << std::endl;
                 EP res = EP::deserialize(res_str.value());
                 if (receive_buffer_map.count(res.get_url()) != 0) {
-                    receive_buffer_map[res.get_url()](res.get_params());
+                    receive_buffer_map[res.get_url()](res);
+                    std::cout << "receive a file" << std::endl;
                 }
             }
         }

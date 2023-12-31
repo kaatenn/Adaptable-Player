@@ -19,6 +19,7 @@ public:
     void reset() override;
 
     std::string get_url() const;
+    std::string get_file_stream() const;
 
 private:
     // Protocol data
