@@ -51,7 +51,7 @@ struct GuiData {
     enum protocol {
         kcp,
         tcp
-    } protocol = kcp;
+    } protocol = tcp;
 };
 
 static GuiData gui_data;
